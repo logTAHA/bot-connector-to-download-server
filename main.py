@@ -32,7 +32,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
             logging.warning(f"User: {user_id} try tried to access a part he doesn’t have access to")
             await update.message.reply_text(mesg.NO_ACCESS)
             return
-    await youtube.send_video(update)
+    await youtube.send_video(update, SETTING["video_part_size"], "p.mp4")
 
 def main():
     request = HTTPXRequest(
