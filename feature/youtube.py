@@ -90,7 +90,6 @@ class Youtube_Video():
 
             if upload_started_mes:
                 await upload_started_mes.delete()
-                
     def split_file(self, part_size, video_name):
         while True:
             folder_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=12))
