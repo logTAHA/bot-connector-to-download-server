@@ -4,8 +4,7 @@ import aiohttp
 from yt_dlp import YoutubeDL
 from pathlib import Path
 
-
-
+# Base save directory (download folder)
 base_save_dir = Path(__file__).parent.parent / "files" / "download"
 
 
@@ -16,7 +15,8 @@ def _format_size(size):
         if size < 1024:
             return f"{size:.1f} {unit}"
         size /= 1024
-    return f"{size:.1f} WHAT UNTI BROOOO!!!!"
+    return f"{size:.1f} WHAT UNIT BROOOO!!!!"
+
 
 async def fetch_video_data_and_save_thumb(url: str, logger):
     try:
@@ -24,8 +24,8 @@ async def fetch_video_data_and_save_thumb(url: str, logger):
             info = ydl.extract_info(url, download=False)
     except Exception as e:
         logger.error(
-                f"[ERROR_TO_CATCH_VIDEO] link={url} error={e.__class__.__name__}: {e}"
-            )
+            f"[ERROR_TO_CATCH_VIDEO] link={url} error={e.__class__.__name__}: {e}"
+        )
         return False, "", "", "❌ لینک نامعتبره یا دسترسی ندارم", []
 
     if not info:
@@ -34,12 +34,15 @@ async def fetch_video_data_and_save_thumb(url: str, logger):
     title = info.get("title", "بدون عنوان")
     description = info.get("description", "بدون توضیحات")
 
-    # Image
     thumb_url = info.get("thumbnail")
     filename = ""
+
     if thumb_url:
+        thumb_dir = base_save_dir / "thumb"
+        thumb_dir.mkdir(parents=True, exist_ok=True)
+
         filename = f"{uuid.uuid4().hex}.jpg"
-        filepath = os.path.join(base_save_dir / "thumb", filename)
+        filepath = thumb_dir / filename
 
         async with aiohttp.ClientSession() as session:
             async with session.get(thumb_url) as resp:
@@ -48,11 +51,14 @@ async def fetch_video_data_and_save_thumb(url: str, logger):
         with open(filepath, "wb") as f:
             f.write(content)
 
-    # formats
+    # ---------------------------------------------
+    # Formats
+    # ---------------------------------------------
     formats = []
     for f in info.get("formats", []):
-        if f.get("vcodec") == "none":
+        if f.get("vcodec") == "none":  
             continue
+
         fmt = {
             "format_id": f.get("format_id"),
             "ext": f.get("ext"),
