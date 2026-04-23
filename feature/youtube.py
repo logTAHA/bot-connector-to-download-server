@@ -34,7 +34,7 @@ class Youtube_Video():
                     text=f"{f['resolution']} | {f['filesize']}",
                     callback_data=f"dl:{f['format_id']}"
                 )]
-                for f in formats[:10]
+                for f in formats
             ]
 
             reply_markup = InlineKeyboardMarkup(keyboard)
