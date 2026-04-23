@@ -117,6 +117,10 @@ async def tg_file_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text(f"❌ خطا: {e}")
         except Exception:
             pass
+        
+async def tg_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text("سلام عشقم")
+
 
 
 # -------------------- Main --------------------
@@ -156,29 +160,22 @@ async def main():
             tg_file_handler
         )
     )
+    tg_app.add_handler(CommandHandler("start", tg_start))
 
-
-    # start both
+    # initialize
     await bale_app.initialize()
     await tg_app.initialize()
 
+    # start
     await bale_app.start()
     await tg_app.start()
 
     # polling
-    await bale_app.updater.start_polling()
-    await tg_app.updater.start_polling()
+    await asyncio.gather(
+        bale_app.run_polling(stop_signals=None),
+        tg_app.run_polling(stop_signals=None)
+    )
 
-    logging.info("Both bots are running...")
-
-    # idle
-    await asyncio.gather(bale_app.updater.idle(), tg_app.updater.idle())
-
-    # stop
-    await bale_app.stop()
-    await tg_app.stop()
-    await bale_app.shutdown()
-    await tg_app.shutdown()
 
 if __name__ == "__main__":
     asyncio.run(main())
