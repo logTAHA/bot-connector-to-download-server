@@ -108,7 +108,7 @@ async def download_video(url: str, format_id, logger, update) -> tuple[bool, str
             await update.effective_message.reply_text(msg)
         return False, msg, ""
 
-    raw_size = fmt_info.get("filesize") or fmt_info.get("filesize_approx")
+    raw_size = fmt_info.get("filesize") or fmt_info.get("filesize_approx")  / (1024 * 1024)
     if raw_size:
         ok, _, _ = check_file(raw_size)
         if not ok:
