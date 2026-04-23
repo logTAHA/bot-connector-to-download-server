@@ -225,11 +225,9 @@ class Youtube_Video():
         temp_dir.mkdir(parents=True, exist_ok=False)
 
         input_file = base_read_video_dir / video_name
+
         out_archive = temp_dir / f"{input_file.stem}.zip"
 
-
-        # on linux / change if need
-        # seven_zip = r"C:\Program Files\7-Zip\7z.exe"
         seven_zip = "/usr/bin/7z"
         cmd = [
             seven_zip,
