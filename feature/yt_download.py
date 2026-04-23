@@ -74,7 +74,7 @@ async def fetch_video_data_and_save_thumb(url: str, logger):
     return True, filename, title, description, formats
 
 
-async def download_video(url: str, format_id, logger, update) -> tuple[bool, str, str]:
+async def download_video(url: str, format_id, logger) -> tuple[bool, str, str]:
     """
     Download video with selected format_id and return (ok, message, filename).
     On failure: (False, reason_message, "")
@@ -92,8 +92,6 @@ async def download_video(url: str, format_id, logger, update) -> tuple[bool, str
     except Exception as e:
         logger.error(f"[ERROR_PROBE_VIDEO] link={url} format_id={format_id} error={e.__class__.__name__}: {e}")
         msg = "❌ نتونستم اطلاعات ویدیو رو بگیرم"
-        if update and update.effective_message:
-            await update.effective_message.reply_text(msg)
         return False, msg, ""
 
     fmt_info = None
@@ -104,8 +102,6 @@ async def download_video(url: str, format_id, logger, update) -> tuple[bool, str
 
     if not fmt_info:
         msg = "❌ فرمت درخواستی پیدا نشد"
-        if update and update.effective_message:
-            await update.effective_message.reply_text(msg)
         return False, msg, ""
 
     raw_size = fmt_info.get("filesize") or fmt_info.get("filesize_approx")  / (1024 * 1024)
@@ -114,8 +110,6 @@ async def download_video(url: str, format_id, logger, update) -> tuple[bool, str
         if not ok:
             logger.warning(f"[VIDEO_TOO_LARGE] link={url} format_id={format_id} size={raw_size}")
             msg = "❌ حجم فایل از حد مجاز بزرگ‌تره"
-            if update and update.effective_message:
-                await update.effective_message.reply_text(msg)
             return False, msg, ""
 
     try:
@@ -139,14 +133,9 @@ async def download_video(url: str, format_id, logger, update) -> tuple[bool, str
             download_info = ydl.extract_info(url, download=True)
             filepath = ydl.prepare_filename(download_info)
 
-        msg = "✅ دانلود با موفقیت انجام شد"
-        if update and update.effective_message:
-            await update.effective_message.reply_text(msg)
         return True, msg, Path(filepath).name
 
     except Exception as e:
         logger.error(f"[ERROR_DOWNLOAD_VIDEO] link={url} format_id={format_id} error={e.__class__.__name__}: {e}")
         msg = "❌ دانلود ویدیو به مشکل خورد"
-        if update and update.effective_message:
-            await update.effective_message.reply_text(msg)
         return False, msg, ""

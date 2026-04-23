@@ -88,6 +88,8 @@ class Youtube_Video():
 
 
     async def send_video(self, update, part_size, url, format_id):
+        msg = update.effective_message  # or msg = update.callback_query.message
+
         user_id = update.effective_user.id
         user_tag = f"(name: {update.effective_user.full_name}, id: {user_id})"
 
@@ -105,7 +107,7 @@ class Youtube_Video():
             )
             if not file_ok:
                 self.logging.info(
-                    f"[FILE-REJECT] user={user_tag} file={file_path.name} reason={reject_res}"
+                    f"[FILE-REJECT] user={user_tag} file={'-' if not video_name else video_name} reason={reject_res}"
                 )
                 return
 
@@ -113,7 +115,7 @@ class Youtube_Video():
             file_path = Path(base_read_video_dir / video_name)
 
             if not file_path.exists():
-                await update.message.reply_text("فایل روی سرور پیدا نشد")
+                await msg.reply_text("فایل روی سرور پیدا نشد")
                 self.logging.info(
                     f"[FILE-MISS] user={user_tag} file={file_path.name}"
                 )
@@ -131,8 +133,8 @@ class Youtube_Video():
                 f"[SEND-START] user={user_tag} file={file_path.name} size={size_mb:.2f}MB session={send_session}"
             )
 
-            await update.message.reply_text("شروع دانلود:" + "\n" + f"سشن آپلود: {send_session}")
-            upload_started_mes = await update.message.reply_text(mesg.UPLOAD_STARTED)
+            await msg.reply_text("شروع دانلود:" + "\n" + f"سشن آپلود: {send_session}")
+            upload_started_mes = await msg.reply_text(mesg.UPLOAD_STARTED)
 
             if need_to_split:
                 temp_dir = self.split_file(part_size, video_name)
@@ -144,7 +146,7 @@ class Youtube_Video():
                     for i in range(5):
                         try:
                             with part_file.open("rb") as part_f:
-                                await update.message.reply_document(
+                                await msg.reply_document(
                                     document=part_f,
                                     filename=part_file.name,
                                     read_timeout=300,
@@ -167,13 +169,13 @@ class Youtube_Video():
                         self.logging.info(
                             f"[SEND-FAIL] user={user_tag} session={send_session} part={part_file.name} size={temp_size:.2f}MB after 5 tries"
                         )
-                        await update.message.reply_text(mesg.UNABLE_TO_UPLOAD + "\nبعد از 5 بار تلاش آخرین فایل ارسال نشد...")
+                        await msg.reply_text(mesg.UNABLE_TO_UPLOAD + "\nبعد از 5 بار تلاش آخرین فایل ارسال نشد...")
                 self.logging.info(
                     f"[SEND-DONE] user={user_tag} file={file_path.name} session={send_session} mode=split"
                 )
             else:
                 with file_path.open("rb") as f:
-                    await update.message.reply_document(
+                    await msg.reply_document(
                         document=f,
                         filename=file_path.name,
                         read_timeout=300,
@@ -189,13 +191,13 @@ class Youtube_Video():
             self.logging.info(
                 f"[SEND-FAIL] user={user_tag} session=? file={file_path.name if file_path else '-'} error={e.__class__.__name__}: {e}"
             )
-            await update.message.reply_text(mesg.UNABLE_TO_UPLOAD)
+            await msg.reply_text(mesg.UNABLE_TO_UPLOAD)
 
         except Exception as e:
             self.logging.error(
                 f"[SEND-CRASH] user={user_tag} session=? file={file_path.name if file_path else '-'} error={e.__class__.__name__}: {e}"
             )
-            await update.message.reply_text(mesg.UNABLE_TO_UPLOAD)
+            await msg.reply_text(mesg.UNABLE_TO_UPLOAD)
 
         finally:
             if temp_dir:
