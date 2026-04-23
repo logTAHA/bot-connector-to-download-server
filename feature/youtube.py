@@ -103,7 +103,7 @@ class Youtube_Video():
             )
 
             file_ok, reject_res, video_name = await yt_download.download_video(
-                url, format_id, self.logging, update
+                url, format_id, self.logging
             )
             if not file_ok:
                 self.logging.info(
