@@ -134,7 +134,7 @@ async def download_video(url: str, format_id, logger) -> tuple[bool, str, str]:
             download_info = ydl.extract_info(url, download=True)
             filepath = ydl.prepare_filename(download_info)
 
-        return True, "فایل با موفقیت دانلود شد", Path(filepath).name
+        return True, "فایل با موفقیت دانلود شد", filepath
 
     except Exception as e:
         logger.error(f"[ERROR_DOWNLOAD_VIDEO] link={url} format_id={format_id} error={e.__class__.__name__}: {e}")

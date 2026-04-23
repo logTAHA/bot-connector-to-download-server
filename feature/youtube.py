@@ -102,18 +102,20 @@ class Youtube_Video():
                 f"[DOWNLOAD-START] user={user_tag} url={url} format={format_id}"
             )
 
-            file_ok, reject_res, video_name = await yt_download.download_video(
+            file_ok, reject_res, video_path = await yt_download.download_video(
                 url, format_id, self.logging
             )
+
+            file_path = Path(video_path)
             if not file_ok:
                 self.logging.info(
-                    f"[FILE-REJECT] user={user_tag} file={'-' if not video_name else video_name} reason={reject_res}"
+                    f"[FILE-REJECT] user={user_tag} file={'-' if not video_path else video_path} reason={reject_res}"
                 )
                 await msg.reply_text(reject_res)
                 return
 
 
-            file_path = Path(base_read_video_dir / video_name)
+            file_path = Path(base_read_video_dir / video_path)
 
             if not file_path.exists():
                 await msg.reply_text("فایل روی سرور پیدا نشد")
@@ -138,7 +140,7 @@ class Youtube_Video():
             upload_started_mes = await msg.reply_text(mesg.UPLOAD_STARTED)
 
             if need_to_split:
-                temp_dir = self.split_file(part_size, video_name)
+                temp_dir = self.split_file(part_size, video_path)
                 for part_file in sorted(temp_dir.glob("*")):
                     self.logging.info(f"[SENDING-PART] user={user_tag} session={send_session} part={part_file.name}")
                     temp_size = part_file.stat().st_size / (1024 * 1024)
@@ -216,7 +218,7 @@ class Youtube_Video():
                 await upload_started_mes.delete()
 
 
-    def split_file(self, part_size, video_name):
+    def split_file(self, part_size, video_path):
         while True:
             folder_name = "".join(random.choices(string.ascii_lowercase + string.digits, k=12))
             temp_dir = base_save_dir / folder_name
@@ -224,15 +226,15 @@ class Youtube_Video():
                 break
         temp_dir.mkdir(parents=True, exist_ok=False)
 
-        input_file = base_read_video_dir / video_name
+        input_file = base_read_video_dir / video_path
 
-        out_archive = temp_dir / f"{input_file.stem}.zip"
+        out_archive = temp_dir / f"{input_file.stem}.7z"
 
         seven_zip = "/usr/bin/7z"
         cmd = [
             seven_zip,
-            "a",              # add
-            "-tzip",          # zip format
+            "a",              
+            "-t7z",
             str(out_archive),
             str(input_file),
             f"-v{part_size}m"
