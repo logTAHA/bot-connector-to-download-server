@@ -56,7 +56,8 @@ class Youtube_Video():
 
         video_name = self.download_video(url)
 
-
+        # TODO: remove this return after writing download_video
+        return
 
 
 
@@ -159,7 +160,7 @@ class Youtube_Video():
     def video_formats(url):
         return []
     
-    def download_video(url):
+    def download_video(self, url):
         video_name = ""
         return video_name
     
