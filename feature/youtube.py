@@ -32,7 +32,17 @@ class Youtube_Video():
         if video_found:
             thumb_path = base_read_thumb_dir / thumb_name
 
-            formats_sorted = sorted(formats, key=resolution_area)
+            filtered_formats = []
+            for fmt in formats:
+                w, h = map(int, fmt["resolution"].split("x"))
+
+                if w > 2000 or h > 1200:
+                    continue
+
+                filtered_formats.append(fmt)
+
+
+            formats_sorted = sorted(filtered_formats, key=resolution_area)
             if len(formats_sorted) <= 6:
                 keyboard = [
                     [
