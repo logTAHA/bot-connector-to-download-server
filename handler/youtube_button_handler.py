@@ -1,4 +1,5 @@
-async def youtube_button_handler(self, update, context):
+
+async def youtube_button_handler(logging, update, context):
     query = update.callback_query
     await query.answer()
 
@@ -18,7 +19,5 @@ async def youtube_button_handler(self, update, context):
         f"روی این دکمه کلیک کردی:\n"
         f"format_id: {format_id}"
     )
-
-    self.logging.info(f"[FORMAT_SELECTED] format_id={format_id} url={url}")
 
     # TODO: Start Download Video
