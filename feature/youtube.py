@@ -27,20 +27,44 @@ class Youtube_Video():
 
 
         video_found, thumb_name, title, description, formats = await yt_download.fetch_video_data_and_save_thumb(url, self.logging)
-        tttt = ""
-        for fmt in formats:
-            tttt += str(fmt) + "\n"
-        await update.message.reply_text(tttt)
+        
 
         if video_found:
             thumb_path = base_read_thumb_dir / thumb_name
-            keyboard = [
-                [InlineKeyboardButton(
-                    text=f"{f['resolution']} | {f['filesize']}",
-                    callback_data=f"dl:{f['format_id']}"
-                )]
-                for f in formats
-            ]
+
+            formats_sorted = sorted(formats, key=resolution_area)
+            if len(formats_sorted) <= 6:
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            text=f"{f['resolution']} | {f['filesize']}",
+                            callback_data=f"youtube:{f['format_id']}|{url}",
+                        )
+                    ]
+                    for f in formats_sorted
+                ]
+            else:
+                n = len(formats_sorted)
+                mid = n // 2
+
+                selected_formats = []
+                # 2 smallest
+                selected_formats.extend(formats_sorted[:2])
+                # 2 middle
+                selected_formats.extend(formats_sorted[mid - 1: mid + 1])
+                # 2 largest
+                selected_formats.extend(formats_sorted[-2:])
+
+                keyboard = [
+                    [
+                        InlineKeyboardButton(
+                            text=f"{f['resolution']} | {f['filesize']}",
+                            callback_data=f"youtube:{f['format_id']}|{url}",
+                        )
+                    ]
+                    for f in selected_formats
+                ]
+
 
             reply_markup = InlineKeyboardMarkup(keyboard)
             caption = f"🎬 {title}\n\n📝 {description[:900]}"
@@ -204,3 +228,6 @@ class Youtube_Video():
         subprocess.run(cmd, check=True)
         return temp_dir
 
+def resolution_area(fmt: dict) -> int:
+    w, h = fmt["resolution"].split("x")
+    return int(w) * int(h)

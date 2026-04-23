@@ -3,11 +3,12 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 from pathlib import Path
 import logging
+from telegram.ext import CallbackQueryHandler
 
 from loader import access_loader, config_loader
 import setting.ready_messages as mesg
-from util import check
 from feature import youtube
+from handler import youtube_button_handler
 
 
 # Base Setting
@@ -62,6 +63,10 @@ def main():
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("dy", dy))
+
+    app.add_handler(
+        CallbackQueryHandler(youtube_button_handler, pattern="^youtube:")
+    )
 
     app.run_polling()
 
