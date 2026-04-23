@@ -104,7 +104,8 @@ async def download_video(url: str, format_id, logger) -> tuple[bool, str, str]:
         msg = "❌ فرمت درخواستی پیدا نشد"
         return False, msg, ""
 
-    raw_size = fmt_info.get("filesize") or fmt_info.get("filesize_approx")  / (1024 * 1024)
+    size_bytes = fmt_info.get("filesize") or fmt_info.get("filesize_approx")
+    raw_size = size_bytes / (1024 * 1024) if size_bytes else None
     if raw_size:
         ok, _, _ = check_file(raw_size)
         if not ok:

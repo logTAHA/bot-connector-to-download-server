@@ -109,6 +109,7 @@ class Youtube_Video():
                 self.logging.info(
                     f"[FILE-REJECT] user={user_tag} file={'-' if not video_name else video_name} reason={reject_res}"
                 )
+                await msg.reply_text(reject_res)
                 return
 
 
