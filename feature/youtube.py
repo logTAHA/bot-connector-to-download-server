@@ -56,8 +56,9 @@ class Youtube_Video():
 
         video_name = self.download_video(url)
 
-        for format in formats:
-            print(formats)
+        for fmt in formats:
+            self.logging.info(f"format: {fmt}")
+
 
         # TODO: remove this return after writing download_video
         return
