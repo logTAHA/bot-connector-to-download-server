@@ -1,5 +1,5 @@
 
-async def youtube_button_handler(logging, update, context):
+async def youtube_button_handler(update, context):
     query = update.callback_query
     await query.answer()
 
