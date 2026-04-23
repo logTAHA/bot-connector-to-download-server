@@ -6,8 +6,11 @@ from pathlib import Path
 
 from util.check import check_file
 
-# Base save directory (download folder)
+# -----------------------------
+# مسیرها
+# -----------------------------
 base_save_dir = Path(__file__).parent.parent / "files" / "download"
+cookie_file = Path(__file__).parent.parent / "cookies" / "youtube.txt"
 
 
 def _format_size(size):
@@ -20,9 +23,22 @@ def _format_size(size):
     return f"{size:.1f} WHAT UNIT BROOOO!!!!"
 
 
+def _cookie_opt():
+    # اگه فایل کوکی موجود بود، استفاده کنیم
+    if cookie_file.exists():
+        return {"cookiefile": str(cookie_file)}
+    return {}
+
+
 async def fetch_video_data_and_save_thumb(url: str, logger):
     try:
-        with YoutubeDL({"quiet": True, "skip_download": True, "noplaylist": True}) as ydl:
+        ydl_opts = {
+            "quiet": True,
+            "skip_download": True,
+            "noplaylist": True,
+            **_cookie_opt(),
+        }
+        with YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=False)
     except Exception as e:
         logger.error(
@@ -58,7 +74,7 @@ async def fetch_video_data_and_save_thumb(url: str, logger):
     # ---------------------------------------------
     formats = []
     for f in info.get("formats", []):
-        if f.get("vcodec") == "none":  
+        if f.get("vcodec") == "none":
             continue
 
         fmt = {
@@ -84,6 +100,7 @@ async def download_video(url: str, format_id, logger) -> tuple[bool, str, str]:
         "noplaylist": True,
         "format": format_id,
         "skip_download": True,
+        **_cookie_opt(),
     }
 
     try:
@@ -128,6 +145,7 @@ async def download_video(url: str, format_id, logger) -> tuple[bool, str, str]:
             "noplaylist": True,
             "format": format_id,
             "outtmpl": outtmpl,
+            **_cookie_opt(),
         }
 
         with YoutubeDL(ydl_opts) as ydl:
