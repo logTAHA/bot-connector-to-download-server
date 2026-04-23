@@ -56,8 +56,13 @@ class Youtube_Video():
 
         video_name = self.download_video(url)
 
+
+        tttt = ""
         for fmt in formats:
-            self.logging.info(f"format: {fmt}")
+            tttt += fmt + "\n"
+        await update.message.reply_text(tttt)
+
+
 
 
         # TODO: remove this return after writing download_video
