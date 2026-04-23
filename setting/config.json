@@ -1,5 +1,6 @@
 {
-    "token": "523486116:NTVZ7epGQUhVkCVtxOvBf7WimRpEvcBenW0",
+    "bale_token": "523486116:NTVZ7epGQUhVkCVtxOvBf7WimRpEvcBenW0",
+    "telegram_token": "8742810561:AAGfutECQCiLphm_kfJMAKtBpRueX_RHLMI",
 
     "video_max_size": 512,
     "video_part_size": 19
