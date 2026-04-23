@@ -117,7 +117,7 @@ async def tg_file_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await message.reply_text(f"❌ خطا: {e}")
         except Exception:
             pass
-        
+
 async def tg_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("سلام عشقم")
 
@@ -141,12 +141,6 @@ async def main():
         .build()
     )
 
-    bale_app.add_handler(CommandHandler("start", start))
-    bale_app.add_handler(CommandHandler("dy", dy))
-    bale_app.add_handler(
-        CallbackQueryHandler(yt_but_handler.youtube_button_handler, pattern="^youtube:")
-    )
-
     # Telegram bot
     tg_app = (
         Application.builder()
@@ -154,26 +148,34 @@ async def main():
         .build()
     )
 
+    # handlers
+    bale_app.add_handler(CommandHandler("start", start))
+    tg_app.add_handler(CommandHandler("start", tg_start))
+
     tg_app.add_handler(
         MessageHandler(
             filters.VIDEO | filters.Document.ALL | filters.ANIMATION | filters.FORWARDED,
             tg_file_handler
         )
     )
-    tg_app.add_handler(CommandHandler("start", tg_start))
 
-    # initialize
+    # initialize both
     await bale_app.initialize()
     await tg_app.initialize()
 
-    # start
     await bale_app.start()
     await tg_app.start()
 
-    # polling
+    # بوت پارالل
+    async def bale_poll():
+        await bale_app.run_polling(stop_signals=None)
+
+    async def tg_poll():
+        await tg_app.run_polling(stop_signals=None)
+
     await asyncio.gather(
-        bale_app.run_polling(stop_signals=None),
-        tg_app.run_polling(stop_signals=None)
+        bale_poll(),
+        tg_poll()
     )
 
 
