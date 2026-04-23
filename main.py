@@ -27,12 +27,22 @@ youtube = youtube.Youtube_Video(logging)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.effective_message.reply_text("سلام! برای دانلود: /dy لینک")
+
+async def dy(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id not in USERS:
-            logging.warning(f"User: {user_id} try tried to access a part he doesn’t have access to")
-            await update.message.reply_text(mesg.NO_ACCESS)
-            return
-    await youtube.send_video(update, SETTING["video_part_size"], "p.mp4")
+        logging.warning(f"User: {user_id} try tried to access a part he doesn’t have access to")
+        await update.effective_message.reply_text(mesg.NO_ACCESS)
+        return
+
+    if not context.args:
+        await update.effective_message.reply_text("❌ لینک ندادی!\nمثال: /dy https://youtube.com/...")
+        return
+
+    url = context.args[0]
+    await youtube.send_video(update, SETTING["video_part_size"], url)
+
 
 def main():
     request = HTTPXRequest(
@@ -51,6 +61,8 @@ def main():
     )
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("dy", dy))
+
     app.run_polling()
 
 if __name__ == "__main__":
