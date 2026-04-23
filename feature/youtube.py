@@ -29,7 +29,7 @@ class Youtube_Video():
         video_found, thumb_name, title, description, formats = await yt_download.fetch_video_data_and_save_thumb(url, self.logging)
         tttt = ""
         for fmt in formats:
-            tttt += fmt + "\n"
+            tttt += str(fmt) + "\n"
         await update.message.reply_text(tttt)
 
         if video_found:
