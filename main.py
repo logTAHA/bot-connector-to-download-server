@@ -7,8 +7,8 @@ from telegram.ext import CallbackQueryHandler
 
 from loader import access_loader, config_loader
 import setting.ready_messages as mesg
-from feature import youtube
-from handler.youtube_button_handler import youtube_button_handler
+from feature.youtube import Youtube_Video
+from handler.youtube_button_handler import Youtube_Button_Handler
 
 
 # Base Setting
@@ -24,8 +24,8 @@ SETTING = config_loader.load_config()
 TOKEN = SETTING["token"]
 
 # Initialize Class
-youtube = youtube.Youtube_Video(logging)
-
+youtube = Youtube_Video(logging)
+yt_but_handler = Youtube_Button_Handler(logging)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text("سلام! برای دانلود: /dy لینک")
@@ -42,7 +42,8 @@ async def dy(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     url = context.args[0]
-    await youtube.send_video(update, SETTING["video_part_size"], url)
+    await youtube.send_video_details(update, url)
+    SETTING["video_part_size"]
 
 
 def main():
@@ -61,11 +62,13 @@ def main():
         .build()
     )
 
+    # --- Handlers ---
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("dy", dy))
 
+    # callback query handlers
     app.add_handler(
-        CallbackQueryHandler(youtube_button_handler, pattern="^youtube:")
+        CallbackQueryHandler(yt_but_handler.youtube_button_handler, pattern="^youtube:")
     )
 
     app.run_polling()

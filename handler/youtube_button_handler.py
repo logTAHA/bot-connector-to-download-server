@@ -1,23 +1,28 @@
+import logging
 
-async def youtube_button_handler(update, context):
-    query = update.callback_query
-    await query.answer()
+class Youtube_Button_Handler:
+    def __init__(self, logger: logging):
+        self.logger = logger
 
-    data = query.data
+    async def youtube_button_handler(self, update, context):
+        query = update.callback_query
+        await query.answer()
 
-    if not data.startswith("youtube:"):
-        return
+        data = query.data
 
-    try:
-        payload = data.split(":", 1)[1]
-        format_id, url = payload.split("|", 1)
-    except ValueError:
-        await query.message.reply_text("خطا در پردازش دکمه")
-        return
+        if not data.startswith("youtube:"):
+            return
 
-    await query.message.reply_text(
-        f"روی این دکمه کلیک کردی:\n"
-        f"format_id: {format_id}"
-    )
+        try:
+            payload = data.split(":", 1)[1]
+            format_id, url = payload.split("|", 1)
+        except ValueError:
+            await query.message.reply_text("خطا در پردازش دکمه")
+            return
 
-    # TODO: Start Download Video
+        await query.message.reply_text(
+            f"روی این دکمه کلیک کردی:\n"
+            f"format_id: {format_id}"
+        )
+
+        # TODO: Start Download Video

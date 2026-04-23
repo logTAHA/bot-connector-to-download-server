@@ -1,4 +1,4 @@
-import os
+import hashlib
 import uuid
 import aiohttp
 from yt_dlp import YoutubeDL
@@ -70,3 +70,37 @@ async def fetch_video_data_and_save_thumb(url: str, logger):
     formats.sort(key=lambda x: x["resolution"] or "", reverse=True)
 
     return True, filename, title, description, formats
+
+
+async def download_video(url: str, format_id, logger) -> str:
+    """
+    Download video with selected format_id and return only filename.
+    Returns empty string on failure.
+    """
+    try:
+        video_dir = base_save_dir / "video"
+        video_dir.mkdir(parents=True, exist_ok=True)
+
+        hash_src = f"{format_id}|{url}"
+        hash_name = hashlib.sha256(hash_src.encode("utf-8")).hexdigest()
+
+        filename_tmpl = f"{hash_name}.%(ext)s"
+        
+        outtmpl = str(video_dir / filename_tmpl)
+
+        ydl_opts = {
+            "quiet": True,
+            "noplaylist": True,
+            "format": format_id,
+            "outtmpl": outtmpl,
+        }
+
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filepath = ydl.prepare_filename(info)
+
+        return Path(filepath).name # File name
+
+    except Exception as e:
+        logger.error(f"[ERROR_DOWNLOAD_VIDEO] link={url} format_id={format_id} error={e.__class__.__name__}: {e}")
+        return ""
