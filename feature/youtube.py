@@ -85,8 +85,7 @@ class Youtube_Video():
         else:
             await update.message.reply_text(description)
             return
-    
-    
+
 
     async def send_video(self, update, part_size, url, format_id):
         user_id = update.effective_user.id
@@ -97,21 +96,35 @@ class Youtube_Video():
         file_path = None
 
         try:
-            video_name = yt_download.download_video()
+            self.logging.info(
+                f"[DOWNLOAD-START] user={user_tag} url={url} format={format_id}"
+            )
+
+            file_ok, reject_res, video_name = await yt_download.download_video(
+                url, format_id, self.logging, update
+            )
+            if not file_ok:
+                self.logging.info(
+                    f"[FILE-REJECT] user={user_tag} file={file_path.name} reason={reject_res}"
+                )
+                return
+
+
             file_path = Path(base_read_video_dir / video_name)
 
             if not file_path.exists():
                 await update.message.reply_text("فایل روی سرور پیدا نشد")
+                self.logging.info(
+                    f"[FILE-MISS] user={user_tag} file={file_path.name}"
+                )
                 return
 
             size_mb = file_path.stat().st_size / (1024 * 1024)
-            file_ok, file_size_err, need_to_split = check.check_file(size_mb)
+            self.logging.info(
+                f"[FILE-FOUND] user={user_tag} file={file_path.name} size={size_mb:.2f}MB"
+            )
 
-            if not file_ok:
-                self.logging.info(
-                    f"[FILE_IS_LARGE] user={user_tag} file={file_path.name} size={size_mb:.2f}MB err={file_size_err}"
-                )
-                return
+            _, _, need_to_split = check.check_file(size_mb)
 
             send_session = "".join(random.choices(string.ascii_lowercase + string.digits, k=16))
             self.logging.info(
@@ -155,6 +168,9 @@ class Youtube_Video():
                             f"[SEND-FAIL] user={user_tag} session={send_session} part={part_file.name} size={temp_size:.2f}MB after 5 tries"
                         )
                         await update.message.reply_text(mesg.UNABLE_TO_UPLOAD + "\nبعد از 5 بار تلاش آخرین فایل ارسال نشد...")
+                self.logging.info(
+                    f"[SEND-DONE] user={user_tag} file={file_path.name} session={send_session} mode=split"
+                )
             else:
                 with file_path.open("rb") as f:
                     await update.message.reply_document(
@@ -165,6 +181,9 @@ class Youtube_Video():
                         connect_timeout=60,
                         pool_timeout=60,
                     )
+                self.logging.info(
+                    f"[SEND-DONE] user={user_tag} file={file_path.name} session={send_session} mode=single"
+                )
 
         except (BadRequest, TimedOut, NetworkError) as e:
             self.logging.info(
@@ -181,10 +200,17 @@ class Youtube_Video():
         finally:
             if temp_dir:
                 shutil.rmtree(temp_dir, ignore_errors=True)
+                self.logging.info(f"[CLEANUP] temp_dir removed={temp_dir}")
+
+            if file_path and file_path.exists():
+                try:
+                    file_path.unlink()
+                    self.logging.info(f"[CLEANUP] source video removed={file_path.name}")
+                except Exception as e:
+                    self.logging.error(f"[CLEANUP-FAIL] source video remove error={e.__class__.__name__}: {e}")
 
             if upload_started_mes:
                 await upload_started_mes.delete()
-
 
 
     def split_file(self, part_size, video_name):

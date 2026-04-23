@@ -1,8 +1,12 @@
 import logging
+from feature.youtube import Youtube_Video
+
 
 class Youtube_Button_Handler:
-    def __init__(self, logger: logging):
+    def __init__(self, logger: logging, youtube: Youtube_Video, SETTING):
         self.logger = logger
+        self.youtube = youtube
+        self.SETTING = SETTING
 
     async def youtube_button_handler(self, update, context):
         query = update.callback_query
@@ -25,4 +29,4 @@ class Youtube_Button_Handler:
             f"format_id: {format_id}"
         )
 
-        # TODO: Start Download Video
+        await self.youtube.send_video(update, self.SETTING["video_part_size"], url, format_id)

@@ -25,7 +25,7 @@ TOKEN = SETTING["token"]
 
 # Initialize Class
 youtube = Youtube_Video(logging)
-yt_but_handler = Youtube_Button_Handler(logging)
+yt_but_handler = Youtube_Button_Handler(logging, youtube, SETTING)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text("سلام! برای دانلود: /dy لینک")
